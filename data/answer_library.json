@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "description": "Certinal approved answer library. Every entry must be reviewed and approved by the owner before status can be set to 'approved'. The agent only cites entries with status 'approved'.",
+    "version": "0.1-seed",
+    "note": "ALL ENTRIES BELOW ARE PLACEHOLDERS demonstrating the schema. Replace with real approved answers extracted from past RFP responses before team rollout."
+  },
+  "entries": [
+    {
+      "id": "ESIGN-SEC-001",
+      "product": "esign",
+      "topic": "security_certifications",
+      "question_patterns": [
+        "What security certifications does your platform hold?",
+        "Is your solution SOC 2 certified?",
+        "List your compliance certifications"
+      ],
+      "answer": "[PLACEHOLDER - VERIFY] Certinal maintains [list certifications here after verification, e.g. SOC 2 Type II, ISO 27001]. Certification reports are available under NDA upon request.",
+      "source_document": "PLACEHOLDER - replace with e.g. 'HealthTrust RFP Response 2026, Section 4.2'",
+      "owner": "Ashutosh / InfoSec",
+      "status": "placeholder",
+      "last_verified": null
+    },
+    {
+      "id": "ESIGN-COMP-001",
+      "product": "esign",
+      "topic": "regulated_industries",
+      "question_patterns": [
+        "Do you support 21 CFR Part 11?",
+        "Is your platform HIPAA compliant?",
+        "FDA compliance for electronic signatures"
+      ],
+      "answer": "Certinal eSign is designed to support compliance with 21 CFR Part 11 and HIPAA requirements, including [specific controls - VERIFY]. Compliance is achieved in combination with appropriate customer configuration and organizational controls.",
+      "source_document": "PLACEHOLDER - approved compliance language per internal guardrails",
+      "owner": "Ashutosh / Compliance",
+      "status": "placeholder",
+      "last_verified": null
+    },
+    {
+      "id": "DPDP-CON-001",
+      "product": "dpdp",
+      "topic": "consent_management",
+      "question_patterns": [
+        "How does your solution handle consent withdrawal?",
+        "Do you support DPDP Act consent requirements?",
+        "Consent lifecycle management capabilities"
+      ],
+      "answer": "[PLACEHOLDER - VERIFY] The Certinal DPDP suite (ConsentFlow, ConsentRights, Rights Portal) supports the consent lifecycle under India's DPDP Act 2023 and DPDP Rules 2025, including [capabilities - VERIFY against product documentation].",
+      "source_document": "PLACEHOLDER - replace with DPDP SOW / product documentation reference",
+      "owner": "Ashutosh / Khanjan",
+      "status": "placeholder",
+      "last_verified": null
+    }
+  ]
+}
