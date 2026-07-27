@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certinal Answer Desk</title>
+<style>
+  :root{
+    --ink:#10243e;
+    --paper:#f7f8fa;
+    --card:#ffffff;
+    --line:#dde3ea;
+    --accent:#0f62fe;
+    --ok:#0e6e3c;
+    --warn-bg:#fff4e5;
+    --warn-line:#b25e00;
+    --block-bg:#fdecec;
+    --block-line:#a3222a;
+    --muted:#5a6b7f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    background:var(--paper);color:var(--ink);
+    display:flex;flex-direction:column;min-height:100vh;
+  }
+  header{
+    background:var(--card);border-bottom:1px solid var(--line);
+    padding:14px 24px;display:flex;align-items:baseline;gap:14px;
+  }
+  header h1{font-size:17px;font-weight:600;letter-spacing:-0.01em}
+  header .sub{font-size:12.5px;color:var(--muted)}
+  header .who{margin-left:auto}
+  header input{
+    border:1px solid var(--line);border-radius:6px;padding:6px 10px;
+    font-size:13px;width:150px;
+  }
+  main{flex:1;max-width:860px;width:100%;margin:0 auto;padding:24px 16px 120px}
+  .msg{margin-bottom:18px}
+  .q{
+    background:var(--ink);color:#fff;border-radius:10px 10px 2px 10px;
+    padding:10px 14px;font-size:14px;max-width:75%;margin-left:auto;
+    white-space:pre-wrap;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    overflow:hidden;max-width:92%;
+  }
+  .card .meta{
+    display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:9px 14px;border-bottom:1px solid var(--line);
+    font-size:11.5px;color:var(--muted);
+  }
+  .chip{
+    border:1px solid var(--line);border-radius:99px;padding:2px 9px;
+    font-size:11px;font-weight:600;letter-spacing:.02em;
+  }
+  .chip.product{background:#eef3ff;color:var(--accent);border-color:#c4d5ff}
+  .chip.conf-high{color:var(--ok);border-color:#bcd9c8;background:#effaf3}
+  .chip.conf-medium{color:#8a6100;border-color:#e3cf9a;background:#fdf7e7}
+  .chip.conf-low{color:var(--block-line);border-color:#e7b6b9;background:#fdf1f1}
+  .chip.src{background:#f2f4f7;font-weight:500}
+  .card .body{padding:14px;font-size:14.5px;line-height:1.55;white-space:pre-wrap}
+  .banner{
+    padding:10px 14px;font-size:13px;line-height:1.45;
+    border-top:1px solid;
+  }
+  .banner.verify{background:var(--warn-bg);border-color:#f0d9b8;color:var(--warn-line)}
+  .banner.blocked{background:var(--block-bg);border-color:#f0c6c8;color:var(--block-line)}
+  .banner strong{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+  .notes{padding:9px 14px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
+  .composer{
+    position:fixed;bottom:0;left:0;right:0;background:var(--card);
+    border-top:1px solid var(--line);padding:14px 16px;
+  }
+  .composer .inner{max-width:860px;margin:0 auto;display:flex;gap:10px}
+  textarea{
+    flex:1;border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+    font-size:14px;font-family:inherit;resize:none;height:52px;
+  }
+  textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+  button{
+    background:var(--accent);color:#fff;border:0;border-radius:8px;
+    padding:0 22px;font-size:14px;font-weight:600;cursor:pointer;
+  }
+  button:disabled{opacity:.5;cursor:default}
+  .hint{max-width:860px;margin:6px auto 0;font-size:11.5px;color:var(--muted)}
+  .thinking{font-size:13px;color:var(--muted);padding:8px 2px}
+  @media(max-width:640px){.q,.card{max-width:100%}header .who{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Certinal Answer Desk</h1>
+  <span class="sub">RFP and prospect questions &middot; eSign + DPDP &middot; drafts require your review</span>
+  <span class="who"><input id="user" placeholder="Your name" />
+  <input id="code" type="password" placeholder="Access code" style="margin-left:8px" /></span>
+</header>
+
+<main id="thread"></main>
+
+<div class="composer">
+  <div class="inner">
+    <textarea id="q" placeholder="Paste a prospect or RFP question. Example: Does your platform support eIDAS qualified electronic signatures?"></textarea>
+    <button id="send" onclick="ask()">Ask</button>
+  </div>
+  <div class="hint">Every answer shows its library sources. Anything marked VERIFY must be checked with the owner before it goes to a customer.</div>
+</div>
+
+<script>
+const thread = document.getElementById('thread');
+const qBox = document.getElementById('q');
+const sendBtn = document.getElementById('send');
+
+document.getElementById('user').value = localStorage.getItem('cad_user') || '';
+document.getElementById('code').value = localStorage.getItem('cad_code') || '';
+
+qBox.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); }
+});
+
+function el(tag, cls, text){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+async function ask(){
+  const question = qBox.value.trim();
+  if (!question) return;
+  const user = document.getElementById('user').value.trim() || 'unknown';
+  qBox.value = '';
+  sendBtn.disabled = true;
+
+  const qMsg = el('div','msg');
+  qMsg.appendChild(el('div','q',question));
+  thread.appendChild(qMsg);
+
+  const wait = el('div','thinking','Searching the answer library...');
+  thread.appendChild(wait);
+  window.scrollTo(0, document.body.scrollHeight);
+
+  try{
+    const code = document.getElementById('code').value.trim();
+    localStorage.setItem('cad_user', user);
+    localStorage.setItem('cad_code', code);
+    const res = await fetch('/api/ask',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Access-Code':code},
+      body: JSON.stringify({question, user})
+    });
+    if (res.status === 401){
+      wait.textContent = 'Invalid access code. Enter the team access code at the top right and try again.';
+      return;
+    }
+    const a = await res.json();
+    wait.remove();
+    renderAnswer(a);
+  }catch(err){
+    wait.textContent = 'Request failed: ' + err.message + '. Try again or contact Ashutosh.';
+  }finally{
+    sendBtn.disabled = false;
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+}
+
+function renderAnswer(a){
+  const wrap = el('div','msg');
+  const card = el('div','card');
+
+  const meta = el('div','meta');
+  meta.appendChild(el('span','chip product',(a.product||'?').toUpperCase()));
+  meta.appendChild(el('span','chip conf-'+(a.confidence||'low'),'confidence: '+(a.confidence||'low')));
+  (a.source_ids||[]).forEach(s => meta.appendChild(el('span','chip src',s)));
+  if (!(a.source_ids||[]).length) meta.appendChild(el('span','chip src','no library source'));
+  card.appendChild(meta);
+
+  card.appendChild(el('div','body',a.answer||''));
+
+  if (a.blocked){
+    const b = el('div','banner blocked');
+    b.appendChild(el('strong','', 'Blocked by compliance guardrail'));
+    b.appendChild(document.createTextNode((a.compliance_flags||[]).join(' ')));
+    card.appendChild(b);
+  } else if (a.verify_required){
+    const b = el('div','banner verify');
+    b.appendChild(el('strong','', 'Verify before sending'));
+    b.appendChild(document.createTextNode(a.verify_reason || 'This answer is not fully covered by the approved library.'));
+    card.appendChild(b);
+  }
+
+  if ((a.compliance_flags||[]).length && !a.blocked){
+    const b = el('div','banner verify');
+    b.appendChild(el('strong','', 'Compliance flags'));
+    b.appendChild(document.createTextNode(a.compliance_flags.join(' ')));
+    card.appendChild(b);
+  }
+
+  if (a.notes_for_salesperson){
+    card.appendChild(el('div','notes','Note: ' + a.notes_for_salesperson));
+  }
+
+  wrap.appendChild(card);
+  thread.appendChild(wrap);
+}
+</script>
+</body>
+</html>
